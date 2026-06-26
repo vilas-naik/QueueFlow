@@ -4,7 +4,7 @@ import { connection } from "../config/redis.js";
 
 export const createJob = async (req, res) => {
   try {
-    const { filename } = req.body;
+    const { filename, delay = 0, priority = 1 } = req.body;
 
     const job = await fileQueue.add(
       "process-file",
@@ -13,7 +13,9 @@ export const createJob = async (req, res) => {
       },
       {
         attempts: 3,
-      }
+        delay,
+        priority,
+      },
     );
 
     res.status(201).json({
@@ -29,13 +31,9 @@ export const createJob = async (req, res) => {
   }
 };
 
-
 export const getJob = async (req, res) => {
   try {
-    const job = await Job.fromId(
-      fileQueue,
-      req.params.id
-    );
+    const job = await Job.fromId(fileQueue, req.params.id);
 
     if (!job) {
       return res.status(404).json({
@@ -50,6 +48,7 @@ export const getJob = async (req, res) => {
       state,
       progress: job.progress,
       data: job.data,
+      priority: job.opts.priority,
       result: job.returnvalue,
     });
   } catch (err) {
@@ -61,23 +60,18 @@ export const getJob = async (req, res) => {
   }
 };
 
-
 export const getJobs = async (req, res) => {
   try {
-    const jobs = await fileQueue.getJobs([
-      "waiting",
-      "active",
-      "completed",
-      "failed",
-    ]);
+    const jobs = await fileQueue.getJobs(["waiting", "active", "completed", "failed"]);
 
     const formatted = await Promise.all(
       jobs.map(async (job) => ({
         id: job.id,
         state: await job.getState(),
         progress: job.progress,
+        priority: job.opts.priority,
         data: job.data,
-      }))
+      })),
     );
 
     res.json(formatted);
