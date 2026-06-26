@@ -1,5 +1,3 @@
-console.log("👷 Worker started");
-
 import { Worker } from "bullmq";
 import { connection } from "../config/redis.js";
 
@@ -9,9 +7,14 @@ const worker = new Worker(
     console.log(`📥 Processing Job #${job.id}`);
     console.log(`📄 File: ${job.data.filename}`);
 
+    // //simulating failure
+    // if (job.data.filename === "fail.pdf") {
+    //   throw new Error("Simulated failure");
+    // }
+
     await job.updateProgress(0);
 
-    // Simulate processing
+    // simulating processing
     await new Promise((resolve) => setTimeout(resolve, 1000));
     await job.updateProgress(25);
 
@@ -32,7 +35,7 @@ const worker = new Worker(
   },
   {
     connection,
-  }
+  },
 );
 
 worker.on("completed", (job) => {
@@ -40,9 +43,7 @@ worker.on("completed", (job) => {
 });
 
 worker.on("failed", (job, err) => {
-  console.log(
-    `❌ Job ${job?.id} failed (${job?.attemptsMade}/${job?.opts.attempts})`
-  );
+  console.log(`📥 Processing Job ${job.id} (Attempt ${job.attemptsMade + 1})`);
 
   console.log(err.message);
 });

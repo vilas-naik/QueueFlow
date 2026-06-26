@@ -15,6 +15,10 @@ export const createJob = async (req, res) => {
         attempts: 3,
         delay,
         priority,
+        backoff: {
+          type: "exponential",
+          delay: 2000,
+        },
       },
     );
 
