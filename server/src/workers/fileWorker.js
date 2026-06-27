@@ -38,12 +38,27 @@ const worker = new Worker(
   },
 );
 
-worker.on("completed", (job) => {
-  console.log(`✅ Job ${job.id} completed`);
+worker.on("completed", async (job) => {
+  console.log(`
+==============================
+✅ JOB COMPLETED
+------------------------------
+ID        : ${job.id}
+File      : ${job.data.filename}
+Result    : ${JSON.stringify(job.returnvalue)}
+==============================
+`);
 });
 
 worker.on("failed", (job, err) => {
-  console.log(`📥 Processing Job ${job.id} (Attempt ${job.attemptsMade + 1})`);
-
-  console.log(err.message);
+  console.log(`
+==============================
+❌ JOB FAILED
+------------------------------
+ID        : ${job?.id}
+File      : ${job?.data?.filename}
+Attempts  : ${job?.attemptsMade}/${job?.opts.attempts}
+Reason    : ${err.message}
+==============================
+`);
 });

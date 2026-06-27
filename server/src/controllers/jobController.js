@@ -6,6 +6,27 @@ export const createJob = async (req, res) => {
   try {
     const { filename, delay = 0, priority = 1 } = req.body;
 
+    if (!filename || typeof filename !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "filename is required",
+      });
+    }
+
+    if (delay < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "delay cannot be negative",
+      });
+    }
+
+    if (priority < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "priority must be at least 1",
+      });
+    }
+
     const job = await fileQueue.add(
       "process-file",
       {
@@ -24,8 +45,11 @@ export const createJob = async (req, res) => {
 
     res.status(201).json({
       success: true,
+      message: "Job created successfully",
       jobId: job.id,
+      state: "waiting",
     });
+    
   } catch (err) {
     console.error(err);
 
