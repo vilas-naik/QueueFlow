@@ -1,0 +1,1 @@
+export const workerId = process.argv[2] || "worker-1";

@@ -1,8 +1,6 @@
 import "dotenv/config";
 import app from "./app.js";
 import { connection } from "./config/redis.js";
-import "./workers/fileWorker.js";
-
 
 const PORT = process.env.PORT || 5000;
 

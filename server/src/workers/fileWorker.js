@@ -1,10 +1,15 @@
+import os from "os";
+
+import { workerId } from "../config/worker.js";
+console.log(`👷 Worker ${workerId} started`);
+
 import { Worker } from "bullmq";
 import { connection } from "../config/redis.js";
 
 const worker = new Worker(
   "file-processing",
   async (job) => {
-    console.log(`📥 Processing Job #${job.id}`);
+    console.log(`👷 ${workerId} processing Job ${job.id}`);
     console.log(`📄 File: ${job.data.filename}`);
 
     // //simulating failure
@@ -15,7 +20,7 @@ const worker = new Worker(
     await job.updateProgress(0);
 
     // simulating processing
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
     await job.updateProgress(25);
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -43,6 +48,7 @@ worker.on("completed", async (job) => {
 ==============================
 ✅ JOB COMPLETED
 ------------------------------
+Worker_ID : ${workerId}
 ID        : ${job.id}
 File      : ${job.data.filename}
 Result    : ${JSON.stringify(job.returnvalue)}
@@ -55,6 +61,7 @@ worker.on("failed", (job, err) => {
 ==============================
 ❌ JOB FAILED
 ------------------------------
+Worker_ID : ${workerId}s
 ID        : ${job?.id}
 File      : ${job?.data?.filename}
 Attempts  : ${job?.attemptsMade}/${job?.opts.attempts}
