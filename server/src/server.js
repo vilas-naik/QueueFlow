@@ -1,6 +1,7 @@
 import "dotenv/config";
 import app from "./app.js";
 import { connection } from "./config/redis.js";
+import { pool } from "./config/postgres.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -15,3 +16,10 @@ connection.on("connect", () => {
 connection.on("error", (err) => {
   console.error("❌ Redis Error:", err.message);
 });
+
+try {
+  await pool.query("SELECT NOW()");
+  console.log("✅ PostgreSQL Connected");
+} catch (err) {
+  console.error(err);
+}

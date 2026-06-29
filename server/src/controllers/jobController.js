@@ -1,6 +1,9 @@
 import { Job } from "bullmq";
 import { fileQueue } from "../queues/fileQueue.js";
 import { connection } from "../config/redis.js";
+import { createJobRecord } from "../database/jobRepository.js";
+import { pool } from "../config/postgres.js";
+import crypto from "crypto";
 
 export const createJob = async (req, res) => {
   try {
@@ -43,13 +46,29 @@ export const createJob = async (req, res) => {
       },
     );
 
+    await createJobRecord(job);
+    await pool.query(
+      `
+  INSERT INTO jobs
+  (
+    id,
+    bullmq_job_id,
+    filename,
+    status,
+    priority
+  )
+  VALUES
+  ($1,$2,$3,$4,$5)
+`,
+      [crypto.randomUUID(), job.id, filename, "waiting", priority],
+    );
+
     res.status(201).json({
       success: true,
       message: "Job created successfully",
       jobId: job.id,
       state: "waiting",
     });
-    
   } catch (err) {
     console.error(err);
 

@@ -1,6 +1,11 @@
 import os from "os";
-
 import { workerId } from "../config/worker.js";
+
+import { Worker } from "bullmq";
+import { connection } from "../config/redis.js";
+import { sendHeartbeat } from "../utils/workerRegistry.js";
+import { pool } from "../config/postgres.js";
+
 console.log(`👷 Worker ${workerId} started`);
 
 sendHeartbeat(workerId);
@@ -8,15 +13,24 @@ setInterval(() => {
   sendHeartbeat(workerId);
 }, 5000);
 
-import { Worker } from "bullmq";
-import { connection } from "../config/redis.js";
-import { sendHeartbeat } from "../utils/workerRegistry.js";
-
 const worker = new Worker(
   "file-processing",
   async (job) => {
     console.log(`👷 ${workerId} processing Job ${job.id}`);
     console.log(`📄 File: ${job.data.filename}`);
+
+    await pool.query(
+      `
+UPDATE jobs
+SET
+status=$1,
+worker_id=$2,
+started_at=$3
+WHERE bullmq_job_id=$4
+`,
+      ["active", workerId, startedAt, job.id],
+    );
+
     const startedAt = Date.now();
 
     // //simulating failure
@@ -42,11 +56,23 @@ const worker = new Worker(
     const completedAt = Date.now();
     const duration = completedAt - startedAt;
 
+    await pool.query(
+      `
+UPDATE jobs
+SET
+status=$1,
+completed_at=$2,
+duration_ms=$3
+WHERE bullmq_job_id=$4
+`,
+      ["completed", completedAt, duration, job.id],
+    );
+
     return {
       success: true,
       filename: job.data.filename,
       processedAt: new Date().toISOString(),
-      duration
+      duration,
     };
   },
   {
