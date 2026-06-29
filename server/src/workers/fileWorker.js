@@ -94,6 +94,22 @@ Result    : ${JSON.stringify(job.returnvalue)}
 });
 
 worker.on("failed", (job, err) => {
+
+  await pool.query(
+`
+UPDATE jobs
+SET
+status=$1,
+failure_reason=$2
+WHERE bullmq_job_id=$3
+`,
+[
+"failed",
+err.message,
+job.id
+]
+);
+
   console.log(`
 ==============================
 ❌ JOB FAILED
