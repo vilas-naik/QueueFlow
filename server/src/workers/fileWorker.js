@@ -16,6 +16,8 @@ setInterval(() => {
 const worker = new Worker(
   "file-processing",
   async (job) => {
+    const startedAt = new Date();
+
     console.log(`👷 ${workerId} processing Job ${job.id}`);
     console.log(`📄 File: ${job.data.filename}`);
 
@@ -31,30 +33,12 @@ WHERE bullmq_job_id=$4
       ["active", workerId, startedAt, job.id],
     );
 
-    const startedAt = Date.now();
-
-    // //simulating failure
-    // if (job.data.filename === "fail.pdf") {
-    //   throw new Error("Simulated failure");
-    // }
-
-    await job.updateProgress(0);
-
-    // simulating processing
     await new Promise((resolve) => setTimeout(resolve, 5000));
-    await job.updateProgress(25);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await job.updateProgress(50);
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await job.updateProgress(75);
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     await job.updateProgress(100);
 
-    const completedAt = Date.now();
-    const duration = completedAt - startedAt;
+    const completedAt = new Date();
+    const duration = completedAt.getTime() - startedAt.getTime();
 
     await pool.query(
       `
@@ -71,7 +55,7 @@ WHERE bullmq_job_id=$4
     return {
       success: true,
       filename: job.data.filename,
-      processedAt: new Date().toISOString(),
+      processedAt: completedAt.toISOString(),
       duration,
     };
   },
@@ -93,22 +77,17 @@ Result    : ${JSON.stringify(job.returnvalue)}
 `);
 });
 
-worker.on("failed", (job, err) => {
-
+worker.on("failed", async (job, err) => {
   await pool.query(
-`
+    `
 UPDATE jobs
 SET
 status=$1,
 failure_reason=$2
 WHERE bullmq_job_id=$3
 `,
-[
-"failed",
-err.message,
-job.id
-]
-);
+    ["failed", err.message, job.id],
+  );
 
   console.log(`
 ==============================
@@ -121,4 +100,4 @@ Attempts  : ${job?.attemptsMade}/${job?.opts.attempts}
 Reason    : ${err.message}
 ==============================
 `);
-});
+}); 
