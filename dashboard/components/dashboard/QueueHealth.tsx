@@ -58,21 +58,20 @@ export default function QueueHealth() {
   ];
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-gradient-to-br from-zinc-950 to-black p-6">
-      <h2 className="mb-5 text-xl font-semibold">Queue Health</h2>
+    <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/40 p-5 shadow-sm h-full">
+      <h2 className="mb-4 text-sm font-semibold tracking-wide text-zinc-100 uppercase">Queue Health</h2>
 
-      <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-3">
         {items.map((item) => (
           <div
             key={item.label}
-            className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-zinc-800/50 transition"
+            className="flex flex-col gap-1 rounded-lg border border-zinc-800/40 bg-zinc-950/50 p-3 hover:bg-zinc-800/60 transition-colors"
           >
-            {" "}
-            <div className="flex items-center gap-3">
-              <span className={`h-3 w-3 rounded-full ${item.color}`} />
-              <p className="font-medium">{item.label}</p>{" "}
+            <div className="flex items-center gap-2">
+              <span className={`h-2 w-2 rounded-full ${item.color}`} />
+              <p className="text-xs font-medium text-zinc-400">{item.label}</p>
             </div>
-            <span className="rounded-md bg-zinc-800 px-3 py-1 text-sm font-semibold">{item.value}</span>{" "}
+            <span className="text-xl font-semibold text-zinc-100">{item.value}</span>
           </div>
         ))}
       </div>

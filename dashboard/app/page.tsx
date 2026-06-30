@@ -5,10 +5,11 @@ import { api } from "@/lib/api";
 
 import MetricCard from "@/components/dashboard/MetricCard";
 import Workers from "@/components/dashboard/Workers";
+import QueueHealth from "@/components/dashboard/QueueHealth";
+import JobsTable from "@/components/dashboard/JobsTable";
 
 import { Analytics } from "@/types/analytics";
 import { getAnalytics } from "@/lib/analytics";
-import QueueHealth from "@/components/dashboard/QueueHealth";
 
 import { Boxes, Activity, CircleX, Timer } from "lucide-react";
 
@@ -29,57 +30,60 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">QueueFlow</h1>
-
-          <p className="mt-3 text-zinc-400 text-lg">Distributed Job Processing Dashboard</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">QueueFlow</h1>
+          <p className="mt-1 text-sm text-zinc-400">Distributed Job Processing Dashboard</p>
         </div>
 
-        <div className="rounded-xl border border-green-700/40 bg-green-500/10 px-4 py-2">
-          <span className="text-green-400 font-medium">🟢 System Healthy</span>
+        <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-20"></span>
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+          </span>
+          <span className="text-xs font-medium text-emerald-400">System Healthy</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total Jobs"
           value={analytics?.total_jobs ?? 0}
           icon={Boxes}
-          color="bg-blue-500/20 text-blue-400"
         />
 
         <MetricCard
           title="Active Jobs"
           value={analytics?.active_jobs ?? 0}
           icon={Activity}
-          color="bg-green-500/20 text-green-400"
         />
 
         <MetricCard
           title="Failed Jobs"
           value={analytics?.failed_jobs ?? 0}
           icon={CircleX}
-          color="bg-red-500/20 text-red-400"
         />
 
         <MetricCard
           title="Avg Duration"
           value={`${analytics?.average_duration ?? 0} ms`}
           icon={Timer}
-          color="bg-yellow-500/20 text-yellow-400"
         />
+      </div>
 
-        <div className="grid grid-cols-12 gap-6">
-          <div className="col-span-7">
-            <QueueHealth />
-          </div>
-
-          <div className="col-span-5">
-            <Workers />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <QueueHealth />
         </div>
+
+        <div className="lg:col-span-1">
+          <Workers />
+        </div>
+      </div>
+
+      <div className="mt-2">
+        <JobsTable />
       </div>
     </div>
   );
