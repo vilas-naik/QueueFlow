@@ -5,9 +5,11 @@ import workerHeartbeat from "./routes/workerRoutes.js";
 import historyRoutes from "./routes/historyRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 
+import cors from "cors";
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 app.use("/api/jobs", jobRoutes);
